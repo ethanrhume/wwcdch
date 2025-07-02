@@ -24,9 +24,6 @@ This R project includes code necessary to create a historical database of
 notifiable conditions for Walla Walla County (2013 - 2023), perform trend analyses, 
 and generate some basic data visualizations.
 
-Primary author: Ethan Hume  
-Contributors: Epidemiology staff, Walla Walla County Dept. of Community Health
-
 > [!IMPORTANT]  
 >
 > **Data Notice**: This repository does not include source data due to privacy 
@@ -65,4 +62,29 @@ Data for this project was sourced from the following:
 
 After cleaning and compiling all data, exploratory analyses were conducted to
 begin identifying outliers in terms of overrepresented diseases, sociodemographic
-disparities, or spatial effects.
+disparities, or spatial effects.  
+
+### Acknowledgements
+
+Much thanks to the epidemiology staff at Walla Walla County Dept. of Community 
+Health for supplying the data and oversight for this project. Thank you to the
+UW Student Epidemiology Action Leaders program for making this work possible.  
+
+<div align = "center">
+  <a href = "https://dch.wwcowa.gov/">
+    <img src = "images/walla_walla_co_logo.jpg"
+    style = "height:100px; display:inline-block; margin-right:30px"
+    alt = "Walla Walla County Logo">
+  </a>
+  <a href = "https://epi.washington.edu/">
+    <img src = "images/seal_logo.png"
+    style = "height:100px; display:inline-block"
+    alt = "SEAL Logo">
+  </a>  
+</div>
+
+
+
+
+
+
