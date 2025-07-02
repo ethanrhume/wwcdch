@@ -21,9 +21,9 @@ doing so, we hope to better understand the direction of trends pre- and
 post-pandemic, and inform future public health interventions.
 
 > [!NOTE]
-> This R project includes code necessary to create a historical database of 
+> **This R project includes code necessary to create a historical database of 
 notifiable conditions for Walla Walla County (2013 - 2023), perform trend analyses, 
-and generate some basic data visualizations.
+and generate some basic data visualizations.**
 
 ### Data Notice
 
