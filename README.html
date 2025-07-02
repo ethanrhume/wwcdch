@@ -354,11 +354,35 @@ display: none;
 
 <div id="walla-walla-county-enteric-diseases-historical-analysis" class="section level1">
 <h1>Walla Walla County Enteric Diseases Historical Analysis</h1>
-<p>This R project includes code necessary to create a historical
+<div id="description" class="section level3">
+<h3>Description</h3>
+<p>Walla Walla County has experienced the highest enteric disease burden
+by county in Washington State for several consecutive years. Enteric
+diseases (or gastrointestinal illnesses) are typically notifiable
+conditions due to their relatively high virulence. Although surveillance
+is in place for these conditions, the County has historically lacked the
+resources to dive deeply into this data.</p>
+<p>The COVID-19 pandemic motivated an expansion for the Walla Walla
+County Department of Community Health (WWCDCH) epidemiology staff, which
+has since allowed for ongoing monitoring and trend analysis for
+notifiable conditions. These notifiable conditions include but are not
+limited to enteric diseases. Since 2022, WWCDCH staff have produced
+annual reports on all notifiable conditions which are used to guide
+health promotion campaigns in the County.</p>
+<p>The current project was motivated by a desire to compile a historical
+database of existing data from 2013 to 2023, and retrospectively extend
+these analyses. In doing so, we hope to better understand the direction
+of trends pre- and post-pandemic, and inform future public health
+interventions.</p>
+<blockquote>
+<p>[!NOTE] This R project includes code necessary to create a historical
 database of notifiable conditions for Walla Walla County (2013 - 2023),
 perform trend analyses, and generate some basic data visualizations.</p>
-<p><strong>Data Notice</strong><br />
-This repository does not include source data due to privacy
+</blockquote>
+</div>
+<div id="data-notice" class="section level3">
+<h3>Data Notice</h3>
+<p>This repository does not include source data due to privacy
 restrictions. Scripts and visualizations are available to reproduce
 results with appropriate data access. If you are interested in obtaining
 the data used to perform these analyses, please reach out to the Walla
@@ -367,19 +391,20 @@ Walla County Department of Community Health.</p>
 no small cell sizes (n &lt; 10) are displayed. This is to protect
 individuals from being re-identified in areas with a small
 population.</p>
-<p><strong>How to run:</strong></p>
+</div>
+<div id="how-to-run-these-analyses" class="section level3">
+<h3>How to run these analyses:</h3>
 <ol style="list-style-type: decimal">
-<li><p>Clone repo (Git) / Download file and open in RStudio
-(non-Git)</p></li>
-<li><p>Open <code>wwcdch.Rproj</code><br />
-This ensures <code>here</code> and <code>renv</code> packages work
-properly</p></li>
+<li><p>Clone this repo</p></li>
+<li><p>Open <code>wwcdch.Rproj</code>. This ensures <code>here</code>
+and <code>renv</code> packages work properly</p></li>
 <li><p>Run the following code in RStudio console once:</p>
 <pre class="r"><code>renv::restore()
 source(&quot;scripts/01_clean.R&quot;)</code></pre>
 <p>This ensures all package versions are the same as my own, and runs
 the data cleaning script so that you are ready for analysis.</p></li>
 </ol>
+</div>
 </div>
 
 

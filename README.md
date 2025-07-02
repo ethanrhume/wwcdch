@@ -1,9 +1,32 @@
 # Walla Walla County Enteric Diseases Historical Analysis
-This R project includes code necessary to create a historical database of 
-notifiable conditions for Walla Walla County (2013 - 2023), perform trend analyses, 
-and generate some basic data visualizations. 
 
-**Data Notice**  
+### Description
+
+Walla Walla County has experienced the highest enteric disease burden by county
+in Washington State for several consecutive years. Enteric diseases (or 
+gastrointestinal illnesses) are typically notifiable conditions due to their relatively 
+high virulence. Although surveillance is in place for these conditions, the County
+has historically lacked the resources to dive deeply into this data.
+
+The COVID-19 pandemic motivated an expansion for the Walla Walla County Department 
+of Community Health (WWCDCH) epidemiology staff, which has since allowed for 
+ongoing monitoring and trend analysis for notifiable conditions. These notifiable 
+conditions include but are not limited to enteric diseases. Since 2022, WWCDCH 
+staff have produced annual reports on all notifiable conditions which are used
+to guide health promotion campaigns in the County.
+
+The current project was motivated by a desire to compile a historical database 
+of existing data from 2013 to 2023, and retrospectively extend these analyses. In 
+doing so, we hope to better understand the direction of trends pre- and 
+post-pandemic, and inform future public health interventions.
+
+> [!NOTE]
+> This R project includes code necessary to create a historical database of 
+notifiable conditions for Walla Walla County (2013 - 2023), perform trend analyses, 
+and generate some basic data visualizations.
+
+### Data Notice
+
 This repository does not include source data due to privacy restrictions. Scripts 
 and visualizations are available to reproduce results with appropriate data access.
 If you are interested in obtaining the data used to perform these analyses, please
@@ -13,12 +36,11 @@ Please also note that all visualizations have been edited to ensure no small cel
 sizes (n < 10) are displayed. This is to protect individuals from being re-identified
 in areas with a small population.
 
-**How to run:**  
+### How to run these analyses: 
 
-1. Clone repo (Git) / Download file and open in RStudio (non-Git)
+1. Clone this repo
 
-2. Open `wwcdch.Rproj`  
-   This ensures `here` and `renv` packages work properly  
+2. Open `wwcdch.Rproj`. This ensures `here` and `renv` packages work properly  
    
 3. Run the following code in RStudio console once:  
    
