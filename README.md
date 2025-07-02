@@ -73,12 +73,12 @@ UW Student Epidemiology Action Leaders program for making this work possible.
 <div align = "center">
   <a href = "https://dch.wwcowa.gov/">
     <img src = "images/walla_walla_co_logo.jpg"
-    style = "height:100px; display:inline-block"
+    style = "max-height: 100px; height: 100%; width: auto; display:inline-block"
     alt = "Walla Walla County Logo">
   </a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <a href = "https://epi.washington.edu/">
     <img src = "images/seal_logo.png"
-    style = "height:100px; display:inline-block"
+    style = "max-height: 100px; height: 100%; width: auto; display:inline-block"
     alt = "SEAL Logo">
   </a>  
 </div>
