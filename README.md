@@ -26,9 +26,7 @@ and generate some basic data visualizations.
 
 > [!IMPORTANT]  
 >
-> **Data Notice**
->
-> This repository does not include source data due to privacy restrictions. Scripts 
+> **Data Notice**: This repository does not include source data due to privacy restrictions. Scripts 
 and visualizations are available to reproduce results with appropriate data access.
 If you are interested in obtaining the data used to perform these analyses, please
 reach out to the Walla Walla County Department of Community Health.
