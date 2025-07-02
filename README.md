@@ -24,7 +24,7 @@ This R project includes code necessary to create a historical database of
 notifiable conditions for Walla Walla County (2013 - 2023), perform trend analyses, 
 and generate some basic data visualizations.
 
-Primary author: Ethan Hume
+Primary author: Ethan Hume  
 Contributors: Epidemiology staff, Walla Walla County Dept. of Community Health
 
 > [!IMPORTANT]  
