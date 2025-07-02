@@ -20,19 +20,18 @@ of existing data from 2013 to 2023, and retrospectively extend these analyses. I
 doing so, we hope to better understand the direction of trends pre- and 
 post-pandemic, and inform future public health interventions.
 
-> [!NOTE]
-> **This R project includes code necessary to create a historical database of 
+This R project includes code necessary to create a historical database of 
 notifiable conditions for Walla Walla County (2013 - 2023), perform trend analyses, 
-and generate some basic data visualizations.**
+and generate some basic data visualizations.
 
-### Data Notice
+> [!IMPORTANT] Data Notice
 
-This repository does not include source data due to privacy restrictions. Scripts 
+> This repository does not include source data due to privacy restrictions. Scripts 
 and visualizations are available to reproduce results with appropriate data access.
 If you are interested in obtaining the data used to perform these analyses, please
 reach out to the Walla Walla County Department of Community Health.
-
-Please also note that all visualizations have been edited to ensure no small cell
+>
+> Please also note that all visualizations have been edited to ensure no small cell
 sizes (n < 10) are displayed. This is to protect individuals from being re-identified
 in areas with a small population.
 
