@@ -4,9 +4,9 @@
 
 Walla Walla County has experienced the highest enteric disease burden by county
 in Washington State for several consecutive years. Enteric diseases (or 
-gastrointestinal illnesses) are typically notifiable conditions due to their relatively 
-high virulence. Although surveillance is in place for these conditions, the County
-has historically lacked the resources to dive deeply into this data.
+gastrointestinal illnesses) are typically notifiable conditions due to their 
+relativelyhigh virulence. Although surveillance is in place for these conditions, 
+the County has historically lacked the resources to dive deeply into this data.
 
 The COVID-19 pandemic motivated an expansion for the Walla Walla County Department 
 of Community Health (WWCDCH) epidemiology staff, which has since allowed for 
@@ -24,18 +24,22 @@ This R project includes code necessary to create a historical database of
 notifiable conditions for Walla Walla County (2013 - 2023), perform trend analyses, 
 and generate some basic data visualizations.
 
+Primary author: Ethan Hume
+Contributors: Epidemiology staff, Walla Walla County Dept. of Community Health
+
 > [!IMPORTANT]  
 >
-> **Data Notice**: This repository does not include source data due to privacy restrictions. Scripts 
-and visualizations are available to reproduce results with appropriate data access.
-If you are interested in obtaining the data used to perform these analyses, please
-reach out to the Walla Walla County Department of Community Health.
+> **Data Notice**: This repository does not include source data due to privacy 
+restrictions. Scripts and visualizations are available to reproduce results only 
+with appropriate data access. If you are interested in obtaining the data used 
+to perform these analyses, please reach out to the Walla Walla County Department 
+of Community Health.
 >
-> Please also note that all visualizations have been edited to ensure no small cell
-sizes (n < 10) are displayed. This is to protect individuals from being re-identified
-in areas with a small population.
+> All visualizations have been edited to ensure no small cell sizes (n < 10) 
+are displayed. This is to protect individuals from being re-identified in areas 
+with a small population.
 
-### How to run these analyses: 
+### How to run these analyses
 
 1. Clone this repo
 
@@ -49,3 +53,16 @@ in areas with a small population.
    ```  
    This ensures all package versions are the same as my own, and runs the 
    data cleaning script so that you are ready for analysis.
+   
+### Methodology
+
+Data for this project was sourced from the following:  
+
+- Annual Communicable Disease Reports (WDOH)  
+- Washington Disease Reporting System
+- STI Data from WDOH
+- Washington Tracking Network
+
+After cleaning and compiling all data, exploratory analyses were conducted to
+begin identifying outliers in terms of overrepresented diseases, sociodemographic
+disparities, or spatial effects.

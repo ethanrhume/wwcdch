@@ -359,7 +359,7 @@ display: none;
 <p>Walla Walla County has experienced the highest enteric disease burden
 by county in Washington State for several consecutive years. Enteric
 diseases (or gastrointestinal illnesses) are typically notifiable
-conditions due to their relatively high virulence. Although surveillance
+conditions due to their relativelyhigh virulence. Although surveillance
 is in place for these conditions, the County has historically lacked the
 resources to dive deeply into this data.</p>
 <p>The COVID-19 pandemic motivated an expansion for the Walla Walla
@@ -381,9 +381,10 @@ perform trend analyses, and generate some basic data visualizations.</p>
 <p>[!IMPORTANT]</p>
 <p><strong>Data Notice</strong>: This repository does not include source
 data due to privacy restrictions. Scripts and visualizations are
-available to reproduce results with appropriate data access. If you are
-interested in obtaining the data used to perform these analyses, please
-reach out to the Walla Walla County Department of Community Health.</p>
+available to reproduce results only with appropriate data access. If you
+are interested in obtaining the data used to perform these analyses,
+please reach out to the Walla Walla County Department of Community
+Health.</p>
 <p>Please also note that all visualizations have been edited to ensure
 no small cell sizes (n &lt; 10) are displayed. This is to protect
 individuals from being re-identified in areas with a small
@@ -391,7 +392,7 @@ population.</p>
 </blockquote>
 </div>
 <div id="how-to-run-these-analyses" class="section level3">
-<h3>How to run these analyses:</h3>
+<h3>How to run these analyses</h3>
 <ol style="list-style-type: decimal">
 <li><p>Clone this repo</p></li>
 <li><p>Open <code>wwcdch.Rproj</code>. This ensures <code>here</code>
@@ -402,6 +403,20 @@ source(&quot;scripts/01_clean.R&quot;)</code></pre>
 <p>This ensures all package versions are the same as my own, and runs
 the data cleaning script so that you are ready for analysis.</p></li>
 </ol>
+</div>
+<div id="methodology" class="section level3">
+<h3>Methodology</h3>
+<p>Data for this project was sourced from the following:</p>
+<ul>
+<li>Annual Communicable Disease Reports (WDOH)<br />
+</li>
+<li>Washington Disease Reporting System</li>
+<li>STI Data from WDOH</li>
+<li>Washington Tracking Network</li>
+</ul>
+<p>After cleaning and compiling all data, descriptive analyses were
+conducted to begin identifying outliers in terms of overrepresented
+diseases, sociodemographic disparities, or spatial effects.</p>
 </div>
 </div>
 
