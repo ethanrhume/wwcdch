@@ -24,8 +24,10 @@ This R project includes code necessary to create a historical database of
 notifiable conditions for Walla Walla County (2013 - 2023), perform trend analyses, 
 and generate some basic data visualizations.
 
-> [!IMPORTANT] Data Notice
-
+> [!IMPORTANT]  
+>
+> **Data Notice**
+>
 > This repository does not include source data due to privacy restrictions. Scripts 
 and visualizations are available to reproduce results with appropriate data access.
 If you are interested in obtaining the data used to perform these analyses, please
