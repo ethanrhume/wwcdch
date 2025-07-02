@@ -1,4 +1,4 @@
-# Walla Walla County Enteric Diseases Historical Analysis
+# Walla Walla County Notifiable Conditions Analysis
 
 ### Description
 
@@ -46,10 +46,15 @@ with a small population.
    
    ```r
    renv::restore()
-   source("scripts/01_clean.R")
+   source("scripts/00_run_all.R")
    ```  
    This ensures all package versions are the same as my own, and runs the 
-   data cleaning script so that you are ready for analysis.
+   'run all' script which will follow the pipeline from data ingestion, cleaning,
+   and transformation through exploratory and inferential analysis, then generate
+   vizualizations and reports.
+   
+   Optionally, you may choose to run a specific script by substituting the script
+   name in the `source()` function.
    
 ### Methodology
 
