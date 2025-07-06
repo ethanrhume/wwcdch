@@ -67,14 +67,15 @@ Data for this project was sourced from the following:
 - Washington Tracking Network
 
 After cleaning and compiling all data, exploratory analyses were conducted to
-begin identifying outliers in terms of overrepresented diseases, sociodemographic
-disparities, or spatial effects.  
+begin identifying associations in terms of overrepresented diseases, sociodemographic
+disparities, or spatial effects. Trends were calculated for each condition and 
+stratified by sex, race/ethnicity, and age. 
 
 ### Acknowledgements
 
 Much thanks to the epidemiology staff at Walla Walla County Dept. of Community 
 Health for supplying the data and oversight for this project. Thank you to the
-UW Student Epidemiology Action Leaders program for making this work possible.  
+UW Student Epidemic Action Leaders program for making this work possible.  
 
 <div align = "center">
   <a href = "https://dch.wwcowa.gov/">
