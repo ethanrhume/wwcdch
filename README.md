@@ -5,8 +5,9 @@
 Walla Walla County has experienced the highest enteric disease burden by county
 in Washington State for several consecutive years. Enteric diseases (or 
 gastrointestinal illnesses) are typically notifiable conditions due to their 
-relativelyhigh virulence. Although surveillance is in place for these conditions, 
-the County has historically lacked the resources to dive deeply into this data.
+relatively high virulence. Although surveillance is in place for these conditions, 
+the County has historically lacked the resources to dive deeply into this data 
+in-house.
 
 The COVID-19 pandemic motivated an expansion for the Walla Walla County Department 
 of Community Health (WWCDCH) epidemiology staff, which has since allowed for 
@@ -77,15 +78,9 @@ UW Student Epidemiology Action Leaders program for making this work possible.
 
 <div align = "center">
   <a href = "https://dch.wwcowa.gov/">
-    <img src = "images/walla_walla_co_logo.png"
-    style = "height:100px; display:inline-block"
+    <img src = "images/combined_logo.png"
     alt = "Walla Walla County Logo">
-  </a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <a href = "https://epi.washington.edu/">
-    <img src = "images/seal_logo.png"
-    style = "height:100px; display:inline-block"
-    alt = "SEAL Logo">
-  </a>  
+  </a>
 </div>
 
 
