@@ -78,7 +78,7 @@ UW Student Epidemiology Action Leaders program for making this work possible.
 
 <div align = "center">
   <a href = "https://dch.wwcowa.gov/">
-    <img src = "images/combined_logo.png"
+    <img src = "images/combined_logo.svg"
     alt = "Walla Walla County Logo">
   </a>
 </div>
