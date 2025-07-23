@@ -21,3 +21,14 @@ compute.measures <- function(table){
   
   results[[1]] #output all results
 }
+
+tosnake <- function(x) {
+  # Ensure input is character
+  if (!is.character(x)) x <- as.character(x)
+  
+  x <- tolower(x)                         # Convert to lowercase
+  x <- gsub("[^a-z0-9]+", "_", x)        # Replace non-alphanumeric with underscores
+  x <- gsub("^_|_$", "", x)              # Trim leading/trailing underscores
+  x <- gsub("_+", "_", x)                # Collapse multiple underscores
+  return(x)
+}

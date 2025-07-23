@@ -63,8 +63,9 @@ Data for this project was sourced from the following:
 
 - Annual Communicable Disease Reports (WDOH)  
 - Washington Disease Reporting System
-- STI Data from WDOH
+- STI Data from WDOH via request
 - Washington Tracking Network
+- CDC's NCHHST Atlas+ tool
 
 After cleaning and compiling all data, exploratory analyses were conducted to
 begin identifying associations in terms of overrepresented diseases, sociodemographic
@@ -80,7 +81,7 @@ UW Student Epidemic Action Leaders program for making this work possible.
 <div align = "center">
   <a href = "https://dch.wwcowa.gov/">
     <img src = "images/combined_logo.svg"
-    alt = "Walla Walla County Logo">
+    alt = "Walla Walla County and SEAL Logos">
   </a>
 </div>
 
