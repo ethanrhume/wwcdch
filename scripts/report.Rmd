@@ -1,0 +1,945 @@
+---
+title: "Notifiable Conditions Historic Analysis"
+author: "Ethan Hume"
+output: 
+  html_document:
+    runtime: shiny_prerendered
+    self_contained: false
+---
+
+```{css, echo=FALSE}
+.floated-table-left {
+  float: left;
+  margin: 0 10em 1em 0;
+  max-width: 40%;
+}
+
+.floated-table-right {
+  float: right;
+  margin: 1em 1em 1em 1em;
+}
+```
+
+
+```{r setup, include=FALSE}
+rm(list = ls())
+
+if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
+pacman::p_load(here, 
+               tidyverse,
+               purrr,
+               broom,
+               flextable,
+               gtsummary,
+               ggplot2,
+               shiny,
+               bslib,
+               haven,
+               knitr,
+               kableExtra) #Loads necessary packages + installs if needed
+
+opts_chunk$set(cache=FALSE)
+
+here::i_am("scripts/report.Rmd") #Ensures `here` properly IDs top-level directory
+
+# Load data once
+ww_inc <- readRDS(here("data", "output", "ww_inc.rds"))
+slope_table <- readRDS(here("data", "output", "slope_table.rds"))
+slope_table <- readRDS(here("data", "output", "slope_table.rds"))
+irr_table_historic <- readRDS(here("data", "output", "irr_table_historic.rds"))
+irr_table_fiveyr <- readRDS(here("data", "output", "irr_table_fiveyr.rds"))
+ww_historic_inc <- readRDS(here("data", "output", "ww_historic_inc.rds"))
+ww_fiveyr_inc <- readRDS(here("data", "output", "ww_fiveyr_inc.rds"))
+enteric_sex <- readRDS(here("data", "output", "enteric_sex.rds"))
+enteric_age <- readRDS(here("data", "output", "enteric_age.rds"))
+histrelprop_long <- readRDS(here("data", "output", "histrelprop_long.RDS"))
+
+# Create a bootstrap theme object with flatly
+bs_global_set(bs_theme(bootswatch = "flatly"))
+
+```
+# Introduction
+
+Walla Walla County has historically experienced a relatively high burden of 
+enteric disease relative to the rest of Washington State. These, and other 
+notifiable conditions, are of significant public health importance due to their 
+high virulence. Understanding the historical trends and distribution of notifiable 
+conditions will guide public health interventions and epidemiological 
+investigations in Walla Walla County.
+
+This project was motivated by a desire to compile a historic database of notifiable 
+conditions data from 2013 to 2023. I then perform some basic analyses to 
+understand which groups shoulder the greatest burden of disease in the County.
+
+# Methodology
+
+### Walla Walla County Counts and Incidence Rates
+
+Walla Walla County notifiable condition counts were compiled primarily from WDRS 
+data. Not all notifiable conditions were used. Table S1 lists all conditions 
+for which data was identified and compiled in the WWCDCH in-house data storage file. 
+Hepatitis, Chlamydia, Gonorrhea, Syphilis, rare STI, and HIV case counts were 
+obtained by request from Washington DOH and were presented in aggregated format 
+as well as stratified by race/ethnicity, sex, and age. Enteric diseases were 
+obtained from WDOH where they were presented by individual case with dates of 
+illness and demographic data. Case counts for elevated childhood blood lead 
+levels were obtained from the Washington Tracking Network data portal. Of note, 
+WTN data was pre-suppressed for low counts, meaning there are some data holes 
+in the Walla Walla County lead case count in-house data. Since suppression 
+occurred at the same benchmark value (≤ 5 cases), incidence rates for the 
+in-house data storage remained unaffected.
+
+Due to differences in the years reported from each data source, some values 
+needed to be sourced elsewhere. Most notifiable conditions sources from WDRS 
+were presented only from 2013 through 2023. Therefore, DOH Annual Communicable 
+Disease reports were used to supplement 2010 through 2012 numbers. Prevalent 
+HIV cases were not provided at the county level through DOH Communicable Disease 
+reports prior to 2013, so this data was sourced from the CDC National Center for 
+HIV , Viral Hepatitis, STD, and Tuberculosis Prevention (NCHHST) AtlasPlus data 
+portal for 2010 through 2012.
+
+Incidence rates were calculated per 100,000 population per the Population Interim 
+Estimates (PIE) by Public Health – Seattle & King County. Incidence rates calculated 
+by DOH or other data sources were not used, and were calculated within the in-house 
+data storage file instead.
+
+### Washington State Counts and Incidence Rates
+
+Washington State notifiable condition counts were compiled primarily from DOH 
+Annual Communicable Disease reports. Not all notifiable conditions were used. 
+Table S1 lists all conditions for which data was identified and compiled 
+in the WWCDCH in-house data storage file. Hepatitis and Syphilis case counts were 
+obtained by request from Washington DOH and were presented in aggregated format 
+as well as stratified by race/ethnicity, sex, and age. Case counts for elevated 
+childhood blood lead levels were obtained from the Washington Tracking Network 
+data portal.
+
+Due to changes in Annual Communicable Disease report construction and reporting 
+guidelines, some less common conditions such as viral hemorrhagic fevers or 
+Anthrax had to be sourced from CDC National Notifiable Diseases Surveillance 
+System (NNDSS) reports. Seasonal influenza deaths for Washington State were 
+sourced from WDOH Influenza Surveillance Season Summaries.
+
+Incidence rates were calculated per 100,000 population per the Population Interim 
+Estimates (PIE) by Public Health – Seattle & King County. Incidence rates calculated 
+by DOH or other data sources were not used, and were calculated within the in-house 
+data storage file instead.
+
+### Notes on Data Formatting or Structure
+
+<ul>
+
+<li>"Brucellosis" and "<i>Burkholderia</i> infection" were originally combined 
+into one line of the `IN-HOUSE Data Storage` document. These conditions were 
+separated. "Melioidosis" and "glanders", two similar conditions caused by species 
+of <i>Burkholderia</i> bacteria, were included as their own lines in the storage 
+document but not reported as such in DOH reporting. These lines were collapsed 
+into the aggregated "Burkholderia infection" line.</li>
+
+<li>"Arboviral diseases" exists as an aggregate in the `IN-HOUSE Data Storage` 
+document, but case counts for “arboviral diseases” did not include Yellow Fever 
+or West Nile Virus as these existed separately in the document. Information was 
+available through DOH for these conditions allowing for their consistent
+disaggregation.</li>
+
+<li>"Tickborne diseases" were an aggregated case count of anaplasmosis, 
+babesiosis, ehrlichiosis, spotted fever rickettsiosis, and tick paralysis.</li>
+
+<li>"Poliomyelitis" and "polio" were collapsed into “polio”.</li>
+
+<li>Influenza data is seasonal instead of annual. Counts and rates are listed 
+under the year in which the flu season in question begins. For example, if Walla 
+Walla County had 36 seasonal influenza deaths in '2010' , this indicates 36 
+seasonal influenza deaths in the 2010 – 2011 flu season.</li>
+
+<li>
+
+Certain data holes still exist after supplementation from a wide variety of 
+sources. The following conditions and years do not have case counts or 
+incidences associated with them for Washington State:
+
+<ul>
+
+<li>Anthrax (2010 – 2015, 2023)</li>
+
+<li>Hepatitis C, perinatal (2010 – 2017)</li>
+
+<li>Hepatitis D (2018 – 2021)</li>
+
+<li>Hepatitis E (2018 – 2023)</li>
+
+<li>Highly Antibiotic-Resistant Organisms (HARO) (2010 – 2011)</li>
+
+<li>Influenza, Novel or unsubtypable strain (2010 – 2016, 2023)</li>
+
+<li>Unexplained Critical Illness or Death (2010 – 2023)</li>
+
+<li>Vaccinia Transmission (2017 – 2023)</li>
+
+<li>Varicella Death (2012 – 2015, 2023)</li>
+
+<li>Viral Hemorrhagic Fever (2010 – 2015, 2023)</li>
+
+</ul>
+
+The following conditions and years do not have case counts or incidences 
+associated with them for Walla Walla County:
+
+<ul>
+
+<li>Lead, Child Blood (2012 – 2015, 2017 – 2018, 2020 -2023)</li>
+
+<li>Rabies, Suspected Human Exposure (2010)</li>
+
+</ul>
+
+</ul>
+
+
+# Results and Discussion
+<blockquote style="font-size: 0.9em;">
+
+**Note on rate suppression:** All presented tables and visualizations have been 
+edited to ensure no small cell sizes or corresponding rates are displayed. This 
+is to protect individuals from being re-identified in areas with a small 
+population, as well as to control for rate instability. Suppression criteria are
+(n ≤ 5) for general communicable diseases, and (n ≤ 16) for STIs.
+
+</blockquote>
+
+### General incidence rates in Walla Walla County
+
+Incidence rates for notifiable diseases in Walla Walla County are generally low,
+with most conditions having had no cases since 2010. There are several conditions
+which depart from the larger trend set by Washington State. These are presented 
+in the following tables, first for 2010 - 2023, by incidence rate ratio:
+
+<br>
+
+```{r echo = FALSE}
+irr_table_historic <- irr_table_historic |>
+  arrange(desc(irr)) |>
+  filter(!is.na(irr)) |>
+  filter(ww_ir != 0) |>
+  select(-c(ww_count, wa_count)) |>
+  filter(row_number() <= 5 | row_number() > n() - 5)
+
+irr_table_historic |>
+  mutate(
+    irr = round(irr, 2),
+    ww_ir = round(ww_ir, 2),
+    wa_ir = round(wa_ir, 2),
+    lower = round(lower, 2),
+    upper = round(upper, 2) 
+  ) |>
+  rename(
+    "Condition" = condition,
+    "WW Incidence" = ww_ir,
+    "WA Incidence" = wa_ir,
+    "IRR" = irr,
+    "95% L" = lower,
+    "95% H" = upper
+  ) |>
+  kable(format = "html", table.attr = "style = 'width:100%;'") |>
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover", "condensed")) |>
+  column_spec(1, width = "11em", extra_css = "white-space: normal;") |>
+  add_header_above(c("Top & Bottom 5 Incidence Rate Ratios (Historical)" = 6)) |>
+  row_spec(5, extra_css = "border-bottom: 2px dotted gray;")
+``` 
+
+<br>
+
+And next for the last five years of extant data:
+
+<br>
+
+```{r echo = FALSE}
+irr_table_fiveyr <- irr_table_fiveyr |>
+  arrange(desc(irr)) |>
+  filter(!is.na(irr)) |>
+  filter(ww_ir != 0) |>
+  select(-c(ww_count, wa_count)) |>
+  filter(row_number() <= 5 | row_number() > n() - 5)
+
+irr_table_fiveyr |>
+  mutate(
+    irr = round(irr, 2),
+    ww_ir = round(ww_ir, 2),
+    wa_ir = round(wa_ir, 2),
+    lower = round(lower, 2),
+    upper = round(upper, 2) 
+  ) |>
+  rename(
+    "Condition" = condition,
+    "WW Incidence" = ww_ir,
+    "WA Incidence" = wa_ir,
+    "IRR" = irr,
+    "95% L" = lower,
+    "95% H" = upper
+  ) |>
+  kable(format = "html", table.attr = "style = 'width:100%;'") |>
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover", "condensed")) |>
+  column_spec(1, width = "11em", extra_css = "white-space: normal;") |>
+  add_header_above(c("Top & Bottom 5 Incidence Rate Ratios (Five Year)" = 6)) |>
+  row_spec(5, extra_css = "border-bottom: 2px dotted gray;")
+``` 
+
+<br>
+
+It is worth noting that most of these IRR extremes are due to slight fluctuations 
+from zero for Walla Walla County incidence. Walla Walla does appear to have a 
+disproportionate incidence of Salmonellosis and Hepatitis C (HCV) in recent years. 
+Salmonellosis incidence surged in 2019, up from 9.71 to 21.29 per 100,000, and 
+has remained high since then. HCV incidence spiked in 2018, from a baseline near
+50 per 100,000 to over 127 per 100,000 population. It has since returned to at or
+below the previous Walla Walla baseline. It is notable that the confidence
+interval for the HCV incidence rate ratio crosses a null value of 1 (0.80 - 44.13).
+These calculations are limited by the sparseness of data available for rare 
+conditions.
+
+Walla Walla County does have lower rates of Herpes Simplex (HSV) and Syphilis than
+Washington State, on average. From 2010 to 2018, HSV rates hovered around 40 per
+100,000 population in Walla Walla, but have since fallen so low as to be suppressed
+in this presentation. Syphilis has historically maintained a rate low enough to
+be suppressed, though in recent years has gradually declined from near 40 per 
+100,000 in 2021 to just over 25 per 100,000 in 2023.
+
+The below interactive tool is a helpful way to explore incidence rates in Walla
+Walla County since 2010. Gray shaded regions represent years where data is 
+suppressed (per the criteria listed at the beginning of **Results** section). 
+Broken segments of the line chart represent rare instances of missing data.
+
+<br>
+
+```{r echo = FALSE, cache = FALSE}
+ui <- fluidPage(
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("condition", "Choose a condition:",
+                  choices = sort(unique(ww_inc$condition)))
+    ),
+    mainPanel(
+      plotOutput("incidencePlot", height = "80vh")
+    )
+  )
+)
+
+server <- function(input, output, session) {
+  
+  output$incidencePlot <- renderPlot({
+    
+    toplot <- ww_inc |>
+      mutate(suppressed = is_tagged_na(inc))
+    
+    toplot$year <- as.numeric(toplot$year)
+    
+    toplot <- toplot |>
+      filter(condition == input$condition)
+    
+    rects <- toplot |>
+      filter(suppressed) |>
+      mutate(xmin = year,
+             xmax = year + 1,
+             ymin = -Inf,
+             ymax = Inf)
+    
+    slope <- slope_table |>
+      filter(condition == input$condition)
+    
+    regression_line <- data.frame(
+      year = seq(2010, 2023, length.out = 100)
+    )
+    
+    regression_line$case_rate <- slope$slope[1] * regression_line$year + 
+      slope$slope_intercept[1]
+    
+    max_y <- max(toplot$inc, na.rm = TRUE)
+    upper_limit <- ifelse(max_y < 100, 100, max_y * 1.1) 
+    
+    ggplot(toplot, aes(x = year, y = inc)) +
+      geom_rect(data = rects,
+                aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+                fill = "seashell4",
+                linewidth = 0.5,
+                alpha = 0.3,
+                inherit.aes = FALSE) +
+      geom_step(color = "darkgoldenrod3", linewidth = 1) +
+      geom_point(size = 0.7, color = "black") +
+      geom_text(aes(label = round(inc, 2)), 
+                vjust = 0.2, hjust = -0.4,
+                size = 3, angle = 45) +
+      geom_line(data = regression_line,
+                aes(x = year, y = case_rate),
+                color = "black", linewidth = 0.3,
+                linetype = "dotted") +
+      labs(
+        x = "Year",
+        y = "Incidence per 100,000",
+        title = paste("Incidence of", input$condition, "in Walla Walla County")
+      ) +
+      scale_x_continuous(
+        breaks = 2010:2024,
+        expand = expansion(mult = c(0, 0.02))
+      ) +
+      coord_cartesian(xlim = c(2010, 2024),
+                      ylim = c(0, upper_limit)) +
+      scale_y_continuous(
+        expand = expansion(add = c(2, 0))
+      ) +
+      theme_classic()
+  })
+}
+
+shinyApp(ui, server)
+```
+
+<br>
+
+The top five notifiable conditions are presented in the below tables
+for Walla Walla county. These insights are best combined with the earlier IRRs
+to better understand which conditions constitute the major burden of disease in
+the County. We see that chlamydia infections are far and away the most common
+notifiable condition, and are joined at the top of the list with gonorrhea. This
+makes good sense given the widespread prevalence of these bacterial STIs 
+nationwide. Do take note of the square root transformation on the y-axis in the
+below graphs in order to accommodate the chlamydia incidence.
+
+The high incidence rates for perinatal HBV and acute HCV infections are concerning,
+and it's likely that acute HCV incidence in part drove the high IRR for HCV
+in Walla Walla versus Washington State (5.94, 95% CI: 0.80 - 44.13).
+
+Campylobacteriosis infections remain in the top six conditions both historically
+and in the most recent five years of data. Examine the trend using the interactive
+tool above to see a gradual increase since 2010, punctuated by a steep increase
+in the latter half of the 2010s and a sudden drop during the Covid pandemic. Since 
+2020, it appears that the gradual upwards trajectory ahs resumed in Walla Walla 
+County.
+
+<br>
+
+<div style="display: flex; gap: 20px;">
+  <div style="flex: 1;">
+```{r echo = FALSE}
+ww_historic_inc <- ww_historic_inc |>
+  arrange(desc(inc)) |>
+  filter(!is.na(inc)) |>
+  head() |>
+  select(
+    condition,
+    inc,
+    lower,
+    upper
+  )
+
+ww_historic_inc$condition <- as.factor(ww_historic_inc$condition)
+ww_historic_inc <- ww_historic_inc |>
+  mutate(condition = factor(condition, levels = condition[order(inc)]))
+
+ww_historic_inc |>
+  mutate(
+    inc = round(inc, 2),
+    lower = round(lower, 2),
+    upper = round(upper, 2) 
+  ) |>
+  rename(
+    "Condition" = condition,
+    "Incidence" = inc,
+    "95% L" = lower,
+    "95% H" = upper
+  ) |>
+  kable(format = "html", table.attr = "style = 'width:100%;'") |>
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover", "condensed")) |>
+  column_spec(1, width = "11em", extra_css = "white-space: normal;") |>
+  add_header_above(c("Top Conditions by Incidence (Historical)" = 4))
+```
+  </div>
+  <div style = "flex:1;">
+```{r echo = FALSE}
+custom_labels <- c(
+  "Campylobacteriosis" = "Campy",
+  "Gonorrhea" = "Gonorrhea",
+  "Hepatitis C, Acute" = "HCVa",
+  "Hepatitis B, Perintatal" = "HBVp",
+  "Highly Antibiotic-Resistant Organisms" = "HARO",
+  "Chlamydia" = "Chlamydia"
+)
+
+ggplot(ww_historic_inc, aes(x = condition, y = inc, color = condition)) +
+  geom_pointrange(aes(ymin = lower, ymax = upper),
+                  size = 0.5,
+                  fatten = 3) +
+  scale_y_continuous(trans = "sqrt") +
+  scale_x_discrete(labels = custom_labels) +
+  theme_classic() +
+  labs(x = "Condition", 
+       y = "Incidence per 100,000",
+       title = "Top conditions by incidence (historical)"
+       ) +
+  guides(color = "none")
+```
+  </div>
+</div>
+
+<div style="display: flex; gap: 20px;">
+  <div style="flex: 1;">
+```{r echo = FALSE}
+ww_fiveyr_inc <- ww_fiveyr_inc |>
+  arrange(desc(inc)) |>
+  filter(!is.na(inc)) |>
+  head() |>
+  select(
+    condition,
+    inc,
+    lower,
+    upper
+  )
+
+ww_fiveyr_inc$condition <- as.factor(ww_fiveyr_inc$condition)
+ww_fiveyr_inc <- ww_fiveyr_inc |>
+  mutate(condition = factor(condition, 
+                            levels = c("Campylobacteriosis",
+                                       "Gonorrhea",
+                                       "Hepatitis C, Acute",
+                                       "Hepatitis B, Perintatal",
+                                       "Highly Antibiotic-Resistant Organisms",
+                                       "Chlamydia")))
+
+ww_fiveyr_inc |>
+  mutate(
+    inc = round(inc, 2),
+    lower = round(lower, 2),
+    upper = round(upper, 2) 
+  ) |>
+  rename(
+    "Condition" = condition,
+    "Incidence" = inc,
+    "95% L" = lower,
+    "95% H" = upper
+  ) |>
+  kable(format = "html", table.attr = "style = 'width:100%;'") |>
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover", "condensed")) |>
+  column_spec(1, width = "11em", extra_css = "white-space: normal;") |>
+  add_header_above(c("Top Conditions by Incidence (Five Year)" = 4))
+```
+  </div>
+  <div style = "flex:1;">
+```{r echo = FALSE}
+custom_labels <- c(
+  "Campylobacteriosis" = "Campy",
+  "Gonorrhea" = "Gonorrhea",
+  "Hepatitis C, Acute" = "HCVa",
+  "Hepatitis B, Perintatal" = "HBVp",
+  "Highly Antibiotic-Resistant Organisms" = "HARO",
+  "Chlamydia" = "Chlamydia"
+)
+
+ggplot(ww_fiveyr_inc, aes(x = condition, y = inc, color = condition)) +
+  geom_pointrange(aes(ymin = lower, ymax = upper),
+                  size = 0.5,
+                  fatten = 3) +
+  scale_y_continuous(trans = "sqrt") +
+  scale_x_discrete(labels = custom_labels) +
+  theme_classic() +
+  labs(x = "Condition", 
+       y = "Incidence per 100,000",
+       title = "Top conditions by incidence (five year)"
+       ) +
+  guides(color = "none")
+```
+  </div>
+</div>
+
+### Foodborne diseases
+
+<div class = "floated-table-left">
+```{r echo = FALSE}
+enteric_sex
+```
+</div>
+
+Foodborne illnesses for the purposes of this analysis include campylobacteriosis
+(*Campylobacter spp.*); salmonellosis (*Salmonella spp.*); shigellosis 
+(*Shigella spp.*) and Shiga toxin-producing *E. coli* (or STEC). Notably, sex
+data was not available for STEC cases and is thus lacking in this analysis. Of 
+these, campylobacteriosis was the most common condition. It was the sixth most 
+common notifiable condition by incidence rate both historically and in the most
+recent five years of analysis.
+
+Incidence of foodborne illnesses were relatively evenly distributed among males 
+and females for both campylobacteriosis and salmonellosis. However, shigellosis 
+skewed heavily towards females (69%) over males (31%). This is almost certainly
+anomalous, as there was only one year with non-suppressed data for
+shigellosis (2019), indicating a generally low incidence  and potential rate
+instability when stratifying by sex or other factors.
+
+<div class = "floated-table-right">
+```{r echo = FALSE}
+enteric_age
+```
+</div>
+
+For both campylobacteriosis and salmonellosis, there was no discernible trend or
+heterogeneity in distribution by age, on visual inspection. However, shigellosis
+was concentrated heavily in the 0 to 9 age category with a general skew towards
+younger individuals. This is similar to STEC, which had a pronounced skew towards
+those under 20 years old. Neither of these conditions had a large number of cases
+(STEC: n = 37; Shigellosis: n = 18), so it remains possible that individual 
+outbreaks or transmission patterns account for some of this heterogeneity. However,
+epidemiologic literature does suggest higher incidence of both in young children.
+
+
+Analyzing incidence stratified by race and ethnicity proved challenging due to
+different practices across data sources and years of collection. For example,
+some sources sorted their data into more granular race categories, while others
+eliminated significant portions of the population in an attempt to aggrefate 
+categories. Few sources allowed for distinctionsof ethnicity and race together 
+("Black, Hispanic" vs. "Black, non-Hispanic").This may have led to the large 
+proportion of cases marked "Other" for race and "Hispanic or Latino/a" for 
+ethnicity. However, "Other" also includes, for some datasets, individuals of 
+two or more races, and small racial groups that were not adequately described 
+amongst the provided response options. The end effect of these conflicting data 
+practices, and of standardizing race categories for the present analysis, was a 
+very high percentage of "Other" in the racial incidence data for both foodborne 
+illnesses and STIs. It will be important when considering thefollowing results 
+to examine both the race and ethnicity data side by side for the best insights.
+
+For most foodborne diseases, the majority of cases occurred in white individuals, 
+except for Shigellosis ("Other race": 50% of cases; "White": 33.3% of cases). 
+However, in all instances, "Other race" was disproportionately represented amongst
+the ill, indicating a significant issue of health equity. This is not entirely
+explained by cases in the Hispanic or Latino/a population, since these cases
+represented only a subset of the "Other race" cases. This indicates that small 
+racial groups and multiracial individuals are also at increased risk for foodborne
+illness in Walla Walla County.
+
+The interactive tool below is useful for visually comparing the proportion of 
+cases in Walla Walla County falling into any demographic group to each other, 
+as well as to the proportion of the Walla Walla population which falls into each
+demographic group. An orange **cases** bar extending past the gray **population**
+bar indicates a group holds a disproportionately *high* burden of disease. The
+opposite, an orange **cases** bar being much smaller than the gray **poppulation**
+bar indicates a group holds a disproportionately *low* burden of disease.
+
+Spend some time to play with the condition and demographic subsetting tools in 
+order to explore who holds the greatest burden of disease for both foodborne 
+conditions and STIs.
+
+<br>
+
+```{r echo = FALSE, cache = FALSE}
+ui2 <- fluidPage(
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("condition", "Choose a condition:",
+                  choices = sort(unique(histrelprop_long$condition))),
+      selectInput("demo_type", "Choose a demographic:",
+                  choices = sort(unique(histrelprop_long$demo_type)))
+    ),
+    mainPanel(
+      plotOutput("demoPlot", height = "80vh")
+    )
+  )
+)
+
+server2 <- function(input, output, session) {
+  output$demoPlot <- renderPlot({
+    
+    n_groups <- histrelprop_long |>
+      filter(demo_type == input$demo_type) |>
+      filter(condition == input$condition) |>
+      pull(group_label) |>
+      unique() |>
+      length()
+    
+    text_size <- ifelse(n_groups <= 3, 6, 4)
+    gap_size <- if (n_groups > 3) {
+      0.19
+    } else if (n_groups > 1 && n_groups <= 3) {
+      0.08
+    } else {
+      0.05
+    }
+  
+    histrelprop_long |>
+      filter(demo_type == input$demo_type) |>
+      filter(condition == input$condition) |>
+      ggplot(aes(x = group_label)) +
+      geom_col(aes(y = population_percent), 
+               fill = "grey90", 
+               width = 0.6) +
+      geom_col(aes(y = percent), 
+               fill = "darkgoldenrod3", 
+               width = 0.5) +
+      geom_text(aes(y = percent + 1.5, 
+                    label = paste0(round(percent, 1), "% of cases")), 
+                size = text_size,
+                color = "black",
+                fontface = "bold",
+                hjust = 0,
+                nudge_x = gap_size) +
+      geom_text(aes(y = percent + 1.5, 
+                    label = paste0(round(population_percent, 1), "% of population")), 
+                size = text_size,
+                color = "black",
+                hjust = 0,
+                nudge_x = -1 * gap_size) +
+      coord_flip() +
+      scale_y_continuous(limits = c(0, 100), expand = c(0, 0)) +
+      theme_classic() +
+      theme(
+        axis.title.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.line.x = element_blank()
+      ) +
+      labs(x = NULL, 
+           title = paste(input$condition, "by", input$demo_type))
+  })
+}
+
+shinyApp(ui2, server2)
+```
+
+<br>
+
+### Sexually transmitted infections
+
+<div class = "floated-table-right">
+```{r echo = FALSE}
+sti_sex <- histrelprop_long |>
+  filter(condition %in% c("Chlamydia", 
+                          "Gonorrhea", 
+                          "Hepatitis C, All", 
+                          "HIV, prevalent HIV cases"
+                          )) |>
+  filter(demo_type == "Sex") |>
+  select(condition, group_label, percent) |>
+  pivot_wider(names_from = condition,
+              values_from = percent)
+
+
+sti_sex |>
+  rename(
+    "Sex" = group_label,
+    "Chlamydia" = Chlamydia,
+    "Gonorrhea" = Gonorrhea,
+    "HCV" = `Hepatitis C, All`,
+    "HIV (prev.)" = `HIV, prevalent HIV cases`
+  ) |>
+  kable(format = "html", table.attr = "style = 'width:100%;'") |>
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover", "condensed")) |>
+  column_spec(1, width = "11em", extra_css = "white-space: normal;") |>
+  add_header_above(c("STIs Proportion by Sex" = 5))
+```
+</div>
+
+STIs analysis is limited to those conditions with enough cases to avoid 
+suppression over the majority of the dataset (chlamydia, gonorrhea, total HCV, 
+and prevalent HIV). There is missingness in this data, and not all values 
+presented will total 100%. 
+
+As epidemiological literature supports, we see a higher prevalence of chlamydia
+in female individuals than in males. However, HIV prevalence and HCV are both 
+strongly skewed towards males while gonorrhea is more homogeneously distributed.
+
+<div class = "floated-table-right">
+```{r echo = FALSE}
+sti_age <- histrelprop_long |>
+  filter(condition %in% c("Chlamydia", 
+                          "Gonorrhea", 
+                          "Hepatitis C, All", 
+                          "HIV, prevalent HIV cases"
+                          )) |>
+  filter(demo_type == "Age") |>
+  select(condition, group_label, percent) |>
+  pivot_wider(names_from = condition,
+              values_from = percent)
+
+
+sti_age |>
+  rename(
+    "Age group" = group_label,
+    "Chlamydia" = Chlamydia,
+    "Gonorrhea" = Gonorrhea,
+    "HCV" = `Hepatitis C, All`,
+    "HIV (prev.)" = `HIV, prevalent HIV cases`
+  ) |>
+  kable(format = "html", table.attr = "style = 'width:100%;'") |>
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover", "condensed")) |>
+  column_spec(1, width = "11em", extra_css = "white-space: normal;") |>
+  add_header_above(c("STIs Proportion by Age Group" = 5))
+```
+</div>
+
+<div class = "floated-table-right">
+```{r echo = FALSE}
+sti_race <- histrelprop_long |>
+  filter(condition %in% c("Chlamydia", 
+                          "Gonorrhea", 
+                          "Hepatitis C, All", 
+                          "HIV, prevalent HIV cases"
+                          )) |>
+  filter(demo_type == "Race") |>
+  select(condition, group_label, percent) |>
+  pivot_wider(names_from = condition,
+              values_from = percent)
+
+
+sti_race |>
+  rename(
+    "Race" = group_label,
+    "Chlamydia" = Chlamydia,
+    "Gonorrhea" = Gonorrhea,
+    "HCV" = `Hepatitis C, All`,
+    "HIV (prev.)" = `HIV, prevalent HIV cases`
+  ) |>
+  kable(format = "html", table.attr = "style = 'width:100%;'") |>
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover", "condensed")) |>
+  column_spec(1, width = "11em", extra_css = "white-space: normal;") |>
+  add_header_above(c("STIs Proportion by Race" = 5))
+```
+</div>
+
+Chlamydia and gonorrhea are both concentrated most densely in 20 to 29 year olds,
+although chlamydia skews slightly towards teenagers while gonorrhea skews the 
+opposite way, into the 30 to 39 year age group. Both are rare outside of this 
+window. In contrast, HCV and HIV are both most densely concentrated in 50 to 59
+year olds with some spillover on either side, into the 40-some and 60-some age 
+groups.
+
+The same caveats discussed for race and ethnicity in foodborne illnesses apply
+to our analysis of sexually transmitted infections. However, the aggregation 
+problem is likely more severe simply due to the increased variety and discordance
+of the datasets STI incidences are pulled from for this project. Notice for 
+example that DOH data provided for HCV and HIV did not include a racial category
+for "Asian", resulting in missingness here. Again, we see large proportions of
+STI incidence falling into the "Other" race category, which we assume comprises
+many distinct identities with different cultural and socioeconomic experiences, 
+impacting their health outcomes in dissimilar ways.
+
+It is also important to note just how much missing data there is for racial 
+categories in the STI analysis. For example, we have racial category data for 
+less than 30% of prevalent HIV cases in Walla Walla County. This limits the 
+insights we can gain from the dataset severely.
+
+We can supplement our understanding of the incomplete racial data with the
+available data on ethnicity. For each communicable disease, we have an estimate
+of burden among the Hispanic or Latino/a population: 
+
+<ul>
+  <li>Chlamydia: 24.91%</li>
+  <li>Gonorrhea: 27.18%</li>
+  <li>HCV: 2.77%</li>
+  <li>HIV prevalence: 23.48%</li>
+</ul>
+
+For all except HCV, which likely suffers from similar issues with missing 
+ethnicity data given its lack of racial category data (total: 39.6%), there is a
+disproportionately high burden of disease in the Hispanic or Latino/a population. 
+Despite the limitations of the data, this conclusion is likely sound given its 
+replication in the epidemiological literature.
+
+
+
+# Supplements
+### Table S1 -- Data sources
+Communicable diseases are listed by the data source used to inform this project.
+
++-------------------+-------------------------------------------------------------+
+| Source            | Conditions                                                  |
++===================+=============================================================+
+| WDRS General\     | Anthrax\                                                    |
+| Communicable\     | Arboviral Disease\                                          |
+| Disease (GCD)\    | Botulism Food\                                              |
+| reports\          | Botulism Infant\                                            |
+| \                 | Botulism Wound\                                             |
+| DOH Annual\       | Brucellosis\                                                |
+| Reports           | Burkholderia Infection (Melioidosis or Glanders)\           |
+|                   | Cholera\                                                    |
+|                   | Coccidioidomycosis\                                         |
+|                   | Cryptococcus gattii\                                        |
+|                   | Cryptosporidiosis\                                          |
+|                   | Cyclosporiasis\                                             |
+|                   | Diphtheria\                                                 |
+|                   | Giardiasis\                                                 |
+|                   | Haemophilus influenzae\                                     |
+|                   | Hantavirus Pulmonary Syndrome\                              |
+|                   | Hemolytic Uremic Syndrome (HUS)\                            |
+|                   | Hepatitis D\                                                |
+|                   | Hepatitis E, Acute\                                         |
+|                   | Herpes Simplex\                                             |
+|                   | Highly Antibiotic-Resistant Organisms (HARO)\               |
+|                   | Hypersensitivity Pneumonitis, Occupational\                 |
+|                   | Influenza, seasonal\                                        |
+|                   | Influenza, Novel or unsubtypable strain\                    |
+|                   | Legionellosis\                                              |
+|                   | Leptospirosis\                                              |
+|                   | Listeriosis\                                                |
+|                   | Lyme Disease\                                               |
+|                   | Malaria\                                                    |
+|                   | Measles\                                                    |
+|                   | Meningococcal Disease\                                      |
+|                   | Mpox (Monkeypox)\                                           |
+|                   | Mumps\                                                      |
+|                   | Pertussis\                                                  |
+|                   | Plague\                                                     |
+|                   | Polio\                                                      |
+|                   | Prion Diseases, Human (CJD)\                                |
+|                   | Psittacosis\                                                |
+|                   | Q Fever\                                                    |
+|                   | Rabies, Human\                                              |
+|                   | Rabies, Suspected Human Exposure\                           |
+|                   | Relapsing Fever\                                            |
+|                   | Rubella\                                                    |
+|                   | Shellfish Poisoning, Paralytic, Domoic Acid, or Diarrhetic\ |
+|                   | Tetanus\                                                    |
+|                   | Tickborne Disease\                                          |
+|                   | Trichinosis\                                                |
+|                   | Tuberculosis\                                               |
+|                   | Tularemia\                                                  |
+|                   | Typhoid fever\                                              |
+|                   | Unexplained Critical Illness or Death\                      |
+|                   | Vaccinia Transmission\                                      |
+|                   | Varicella Death\                                            |
+|                   | Vibriosis\                                                  |
+|                   | West Nile Virus Disease\                                    |
+|                   | Yellow Fever\                                               |
+|                   | Yersiniosis                                                 |
++-------------------+-------------------------------------------------------------+
+| PHIMS-STD via\    | Chancroid\                                                  |
+| DOH request\      | Chlamydia\                                                  |
+| \                 | Gonorrhea\                                                  |
+| DOH Annual\       | Lymphogranuloma\                                            |
+| Reports           | Syphilis, All\                                              |
+|                   | Syphilis, (Primary and Secondary)\                          |
+|                   | Syphilis, Early non-primary non-secondary\                  |
+|                   | Syphilis, Late/unknown duration\                            |
+|                   | Syphilis, Congenital                                        |
++-------------------+-------------------------------------------------------------+
+| WDRS via DOH\     | Hepatitis A, acute\                                         |
+| request           | Hepatitis B, All\                                           |
+|                   | Hepatitis B, Acute\                                         |
+|                   | Hepatitis B, Chronic\                                       |
+|                   | Hepatitis B, Perintatal\                                    |
+|                   | Hepatitis C, All\                                           |
+|                   | Hepatitis C, Acute\                                         |
+|                   | Hepatitis C, Chronic\                                       |
+|                   | Hepatitis C, Perintatal                                     |
++-------------------+-------------------------------------------------------------+
+| HIV Surveillance\ | HIV, new cases\                                             |
+| Report via\       | HIV, prevalent HIV cases                                    |
+| DOHrequest\       |                                                             |
+| \                 |                                                             |
+| CDC NCHHST\       |                                                             |
+| AtlasPlus tool    |                                                             |
++-------------------+-------------------------------------------------------------+
+| Washington\       | Lead, Child Blood                                           |
+| Tracking Network  |                                                             |
++-------------------+-------------------------------------------------------------+
+| DOH Data\         | Campylobacteriosis\                                         |
+| Request           | Salmonellosis\                                              |
+|                   | Shiga toxin-producing E. coli ("STEC")\                     |
+|                   | Shigellosis                                                 |
++-------------------+-------------------------------------------------------------+
+
+<!-- Last run: 2025-08-08 13:37:04.83304 -->

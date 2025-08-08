@@ -12,14 +12,17 @@ source(here("R", "custom_functions.R")) #Adds custom functions to environment
 
 
 #### Read in data ####
-dat <- read_csv(here("data", "dat_clean.csv"))
-wa_cases <- read_csv(here("data", "dat_wa_cases.csv"))
-ww_cases <- read_csv(here("data", "dat_ww_cases.csv"))
-enteric <- read_csv(here("data", "enteric.csv"))
+dat <- readRDS(here("data", "output", "dat_clean.rds"))
+wa_cases <- readRDS(here("data", "output", "dat_wa_cases.rds"))
+ww_cases <- readRDS(here("data", "output", "dat_ww_cases.rds"))
+enteric <- readRDS(here("data", "output", "enteric.rds"))
+wa_dat <- readRDS(here("data", "output", "wa_dat.rds"))
+ww_dat <- readRDS(here("data", "output", "ww_dat.rds"))
+sade <- readRDS(here("data", "output", "sade.rds"))
 
-sti_sets_helper <- list.files(path = here("data", "sti_sets"), 
-                              pattern = "\\.csv$", full.names = TRUE)
-sti_sets <- lapply(sti_sets_helper, read_csv)
+sti_sets_helper <- list.files(path = here("data", "output", "sti_sets"), 
+                              pattern = "\\.rds$", full.names = TRUE)
+sti_sets <- lapply(sti_sets_helper, readRDS)
 names(sti_sets) <- tools::file_path_sans_ext(basename(sti_sets_helper))
 
 #### Transformation ####
@@ -138,6 +141,8 @@ sti_sets <- map(sti_sets, ~ select(.x, -any_of(c("total", "unknown",
                                                  "other_or_unknown"))))
 
 ### 5. enteric ###
+enteric$age <- as.numeric(as.character(enteric$age))
+
 enteric$sex <- factor(enteric$sex, levels = c(1, 2), 
                       labels = c("Male", "Female"))
 enteric$hispanic <- factor(enteric$hispanic, levels = c(0, 1),
@@ -164,15 +169,70 @@ enteric$agecat <- factor(enteric$agecat, levels = c(1:9),
                                     "40 to 49", "50 to 59", "60 to 69", "70 to 79", 
                                     "> 80"))
 
-write_csv(notifiable, here("data", "notifiable.csv"))
-write_csv(con_index, here("data", "con_index.csv"))
-write_csv(wa_cases, here("data", "dat_wa_cases.csv"))
-write_csv(ww_cases, here("data", "dat_ww_cases.csv"))
-saveRDS(enteric, here("data", "enteric.rds"))
+### 6. wa_dat and ww_dat for time-series plots ###
+wa_dat <- wa_dat |>
+  pivot_longer(
+    cols = -all_of("condition"),
+    names_to = "year", 
+    values_to = "rate"
+  )
+
+wa_dat$year <- as.numeric(wa_dat$year)
+
+ww_dat <- ww_dat |>
+  pivot_longer(
+    cols = -all_of("condition"),
+    names_to = "year",
+    values_to = "rate"
+  )
+
+ww_dat$year <- as.numeric(ww_dat$year)
+
+### 7. Relative proportions of each demographic in WW ###
+ww_relprop_all <- sade |>
+  filter(Year != 2024) # REMOVE IN SUBSEQUENT ANALYSES
+  
+ww_relprop_all <- ww_relprop_all |>
+  mutate(across(all_of(names(ww_relprop_all)), as.numeric))
+
+to_sum <- ww_relprop_all |>
+  select(-c("Year"))
+
+to_sum <- names(to_sum)
+
+historic_relprop_row <- sapply(ww_relprop_all[to_sum], sum)
+historic_relprop_row <- c(Year = "Historic", historic_relprop_row)
+
+fiveyr_relprop_row <- sapply(tail(ww_relprop_all[to_sum], 5), sum)
+fiveyr_relprop_row <- c(Year = "Last five years", fiveyr_relprop_row)
+
+ww_relprop_all <- rbind(ww_relprop_all, fiveyr_relprop_row, historic_relprop_row)
+ww_relprop <- tail(ww_relprop_all, 2) |>
+  mutate(across(-"Year", as.numeric))
+  
+ww_relprop <- ww_relprop |>
+  mutate(across(
+    .cols = -c("Total", "Year"),
+    .fns = ~ . / Total * 100
+  ))
+
+ww_relprop <- ww_relprop |>
+  mutate(across(where(is.numeric), ~ round(., 2)))
+
+(names(ww_relprop_all))
+saveRDS(notifiable, here("data", "output", "notifiable.rds"))
+saveRDS(con_index, here("data", "output", "con_index.rds"))
+saveRDS(wa_dat, here("data", "output", "wa_dat.rds"))
+saveRDS(ww_dat, here("data", "output", "ww_dat.rds"))
+saveRDS(wa_cases, here("data", "output", "dat_wa_cases.rds"))
+saveRDS(ww_cases, here("data", "output", "dat_ww_cases.rds"))
+saveRDS(enteric, here("data", "output", "enteric.rds"))
+saveRDS(ww_relprop, here("data", "output", "ww_relprop.rds"))
 
 walk(names(sti_sets), function(name) {
-  write_csv(
+  saveRDS(
     sti_sets[[name]],
-    file = here("data", "sti_sets", paste0(name, ".csv"))
+    file = here("data", "output", "sti_sets", paste0(name, ".rds"))
   )
 })
+
